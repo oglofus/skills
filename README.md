@@ -6,7 +6,7 @@ Public agent skills from [Oglofus](https://github.com/oglofus), packaged for the
 
 ### GitHub Issues task manager
 
-Turns GitHub Issues into the source of truth for agent work: duplicate search, native issue fields, sub-issues and dependencies, progress comments, per-issue commits, test evidence, pull requests, and a mandatory post-creation self-review/remediation loop.
+Turns GitHub Issues into the source of truth for agent work: duplicate search, native issue fields, sub-issues and dependencies, progress comments, per-issue commits, test evidence, CI pipeline diagnosis and remediation, pull requests, and a mandatory post-creation self-review/remediation loop.
 
 Install it into the current project:
 

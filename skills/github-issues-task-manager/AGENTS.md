@@ -60,6 +60,20 @@ Before opening or updating a PR, **run every item** in the issue Testing section
 - If a test cannot be run (GitHub UI-only, another product, missing secrets, no deploy, hardware, and so on), do **not** skip it silently. Add a **Manual tests** section on the PR with step-by-step instructions the user can follow, and leave that checkbox unchecked (or mark it `manual`).
 - Prefer writing Testing items that an agent can execute (`gh`, git, unit/integration commands). Mark human-only checks as such when filing the issue.
 
+## CI pipelines are collaborators
+
+Discover repository workflows and check the current branch or PR pipeline before claiming work is complete. After every push, monitor the resulting checks to a terminal state. A pending check is not a failure, and a locally passing test does not override a failed required check.
+
+When a check fails:
+
+1. Read the failing job, step, annotations, and available logs before editing.
+2. Classify it as caused by the change, an unrelated baseline failure, flaky/transient, or infrastructure/external. Record the evidence; do not guess from the check name alone.
+3. Fix change-caused failures within the issue scope, run the smallest relevant local reproduction plus the required test plan, commit, push, and monitor the replacement run.
+4. Rerun a job without a code change only when evidence supports a transient failure. Never disable, bypass, or weaken a required check.
+5. If the failure is unrelated or fixing it would expand scope, report it on the PR and root issue with the check/job URL and the next action or blocker. Create/link a separate issue when follow-up work is required.
+
+Post concise PR and issue comments for material transitions: failure diagnosed, remediation pushed, checks recovered, or an external blocker confirmed. Include check names, links, relevant error evidence, commit SHA, and verification commands. Do not post a comment for every poll. For non-GitHub providers, follow the details URL exposed by the commit status/check run and use the provider's available read or retry interface; do not invent provider-specific commands.
+
 ## After the root issue
 
 Open a PR into `main`. Fill `.github/pull_request_template.md`, link `Closes #<root>`, and assign. Add `agent` if an agent opened it, plus `area:*` when useful. Do not restack type/priority labels on the PR. Do not merge unless asked.
@@ -67,6 +81,8 @@ Open a PR into `main`. Fill `.github/pull_request_template.md`, link `Closes #<r
 The PR Test plan must show what the agent ran. Any item the agent could not run must have step-by-step **Manual tests** instructions on that same PR.
 
 Creating the PR does **not** finish the workflow. Immediately run this self-review and remediation loop:
+
+Before self-review, inspect the PR checks. Continue useful review work while checks run, but do not publish the final completion report until required checks reach a successful terminal state or an external blocker is explicitly documented.
 
 1. Read the complete PR diff and changed files. Review correctness, security, regressions, tests, accessibility, maintainability, and compliance with the root issue.
 2. Publish every actionable finding as an inline PR review comment on the changed line that needs work. Use one thread per finding and explain the problem, impact, and expected correction. Do not create findings for praise or optional preferences.

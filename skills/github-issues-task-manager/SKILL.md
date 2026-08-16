@@ -1,6 +1,6 @@
 ---
 name: github-issues-task-manager
-description: Runs the repo GitHub Issues task-manager loop — duplicate search, native issue type/Priority/Effort, sub-issues, blocked-by/blocking, tests or manual instructions, comments, checklists, branch from main, commit/push per issue, assigned PRs, and mandatory post-creation PR self-review with inline findings, finding sub-issues, per-finding fixes, and resolved review threads. Use when planning, implementing, filing or updating GitHub issues, checking duplicates, committing finished work, installing this skill into a repo, opening a pull request, or self-reviewing and remediating a PR.
+description: Runs the repo GitHub Issues task-manager loop — duplicate search, native issue fields, sub-issues and dependencies, tests, branches, commits, pull requests, CI/check discovery and failure remediation, pipeline status comments, and mandatory post-creation PR self-review. Use when planning or implementing issue work, working on a branch or PR with CI pipelines, diagnosing or fixing failed checks, communicating pipeline status, committing finished work, opening a pull request, or self-reviewing and remediating a PR.
 ---
 
 # GitHub Issues task manager
@@ -206,7 +206,72 @@ Before opening or updating the PR, execute every Testing / Test plan item from t
 - If you cannot run an item, add **Manual tests** on the PR with numbered steps the user can follow. Leave that checkbox unchecked or mark it `manual`.
 - Prefer agent-runnable checks when writing Testing sections (`gh`, git, `pnpm test`, curl). Label human-only checks as such in the issue.
 
-## 10. Open the PR when the root issue implementation is done
+## 10. Collaborate with branch and PR pipelines
+
+Treat commit checks as part of verification. First discover workflow definitions and the current commit state:
+
+```bash
+find .github/workflows -maxdepth 1 -type f -print 2>/dev/null
+BRANCH=$(git branch --show-current)
+SHA=$(git rev-parse HEAD)
+gh run list --branch "$BRANCH" --limit 20
+gh api -H "Accept: application/vnd.github+json" \
+  "repos/${REPO}/commits/${SHA}/check-runs" \
+  --jq '.check_runs[] | {name,status,conclusion,details_url}'
+gh api -H "Accept: application/vnd.github+json" \
+  "repos/${REPO}/commits/${SHA}/status" \
+  --jq '.statuses[] | {context,state,description,target_url}'
+```
+
+When a PR exists, use its aggregated view. `--required` is useful but can omit optional checks that still reveal regressions, so inspect all checks first:
+
+```bash
+PR_NUM=$(gh pr view --json number --jq .number)
+gh pr checks "$PR_NUM"
+gh pr checks "$PR_NUM" --json name,state,bucket,link,workflow
+```
+
+Pending or queued checks are not failures. Continue independent work while they run. To wait when pipeline state is the remaining gate:
+
+```bash
+gh pr checks "$PR_NUM" --watch --interval 10
+```
+
+If GitHub Actions fails, resolve the run from the check link or list, then read evidence before editing:
+
+```bash
+gh run list --branch "$BRANCH" --limit 20
+gh run view "$RUN_ID" --json url,name,event,status,conclusion,jobs
+gh run view "$RUN_ID" --log-failed
+```
+
+Trace the first causal error, not only the last cascading message. Compare it with local tests, the changed files, and—when available—the default-branch result. Classify the failure:
+
+- **Change-caused:** reproduce locally when practical, fix within issue scope, run the focused test and full required test plan, commit, push, and inspect the new run.
+- **Flaky/transient:** rerun only with evidence such as a timeout, runner loss, rate limit, or known nondeterministic test. Use `gh run rerun "$RUN_ID" --failed`, then monitor it. Do not repeatedly rerun an unexplained deterministic failure.
+- **Infrastructure/external:** preserve the logs and URL, identify the owner or needed external action, and report the blocker. Do not change product code to mask it.
+- **Unrelated baseline:** verify against the default branch or prior run when practical. Do not silently expand scope; create or link a follow-up issue if a fix is needed.
+
+For an external CI provider, use the `link`, `details_url`, or `target_url` returned above to inspect it through available tools. Use provider-specific read/retry commands only when they are actually available and understood. Never bypass, disable, or weaken a required check, and never expose secrets copied from logs.
+
+Comment only on material transitions, not every poll. Put the operational update on the PR and mirror the durable result or blocker on the root issue:
+
+```bash
+gh pr comment "$PR_NUM" --body "## CI update
+
+- Failed check: \`CHECK_NAME\` — CHECK_URL
+- Diagnosis: CAUSAL_ERROR and classification
+- Action: fix/rerun/blocker, with commit \`SHA\` when applicable
+- Verification: commands and current replacement-run state"
+
+gh issue comment "$ROOT_NUM" --body "## CI status
+
+CHECK_NAME was diagnosed as CLASSIFICATION. ACTION. Evidence: CHECK_URL."
+```
+
+After each remediation push, repeat check discovery for the new SHA. Do not claim completion while a required check is pending or failing. If checks cannot finish because of an external condition, explicitly state that the PR remains blocked and what will unblock it.
+
+## 11. Open the PR when the root issue implementation is done
 
 ```bash
 gh pr create \
@@ -242,7 +307,7 @@ Do not merge unless asked.
 
 PR creation is a checkpoint, not completion. Continue through the self-review loop below without waiting for another prompt.
 
-## 11. Self-review the created PR
+## 12. Self-review the created PR
 
 Resolve the current PR and inspect its complete diff:
 
@@ -292,9 +357,9 @@ gh api --paginate "repos/${REPO}/pulls/${PR_NUM}/comments?per_page=100" \
   --jq '.[] | {id, node_id, path, line, html_url, body}'
 ```
 
-If there are no actionable findings, post a PR comment stating what was reviewed and that the pass was clean, comment the same result on the root issue, then perform the final checks in step 14. Never invent findings to populate the loop.
+If there are no actionable findings, post a PR comment stating what was reviewed and that the pass was clean, comment the same result on the root issue, then perform the final checks in step 15. Never invent findings to populate the loop.
 
-## 12. Create a sub-issue for every finding
+## 13. Create a sub-issue for every finding
 
 Create one sub-issue of the root issue per actionable comment. Use the normal detailed issue format and native fields described above. Each finding issue must include:
 
@@ -306,7 +371,7 @@ Create one sub-issue of the root issue per actionable comment. Use the normal de
 
 Pass `parentIssueId` during creation or attach it through the sub-issues API in step 4. Assign the current user and add `agent` plus the relevant `area:*` label. Comment on the root issue with the self-review summary and links to every finding sub-issue and PR thread before fixing any finding.
 
-## 13. Fix, push, and resolve findings one at a time
+## 14. Fix, push, and resolve findings one at a time
 
 For each finding sub-issue, sequentially:
 
@@ -366,9 +431,9 @@ gh issue comment "$ROOT_NUM" --body "Self-review finding #${CHILD_NUM} is fixed,
 
 Do not resolve a thread because a commit exists; verify the actual pushed diff and relevant tests first. If a thread becomes outdated, still verify the fix, record the outdated state in the sub-issue, and resolve the thread when GitHub permits it.
 
-## 14. Repeat review and report completion
+## 15. Repeat review and report completion
 
-After all finding sub-issues close, re-run the full issue and PR test plans when cumulative fixes could interact. Then review the entire updated PR again using step 11. Every new actionable finding restarts steps 11–13 with a new inline comment and sub-issue.
+After all finding sub-issues close, re-run the full issue and PR test plans when cumulative fixes could interact. Then review the entire updated PR again using step 12. Every new actionable finding restarts steps 12–14 with a new inline comment and sub-issue.
 
 Completion requires all of the following:
 
@@ -378,5 +443,6 @@ Completion requires all of the following:
 - every finding sub-issue has progress, test, commit, and completion comments and is closed
 - every associated self-review thread is resolved after verification
 - root issue and PR checklists are current
+- required CI checks are successful; otherwise report the work as blocked, with the external condition and exact next action documented
 
 Post a final PR comment and root-issue comment listing the final review result, finding sub-issues, commits, test evidence, and remaining manual tests. Do not merge unless asked.

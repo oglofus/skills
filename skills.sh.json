@@ -1,0 +1,11 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "GitHub workflows",
+      "description": "Skills for issue-driven development and auditable pull-request workflows.",
+      "skills": ["github-issues-task-manager"]
+    }
+  ]
+}

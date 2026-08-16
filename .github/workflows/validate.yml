@@ -1,0 +1,28 @@
+name: Validate skills
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate catalog JSON
+        run: jq empty skills.sh.json
+
+      - name: Validate installer syntax
+        run: bash -n scripts/install.sh
+
+      - name: Verify skill discovery
+        run: npx --yes skills add . --list

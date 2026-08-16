@@ -1,0 +1,50 @@
+name: Task
+description: Implementation, documentation, or process work that is not a bug or feature
+title: "[Task]: "
+type: Task
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search open and recently closed issues before filing. If a match exists, comment on that issue instead of opening another one.
+
+        After creating this issue, set native Priority and Effort fields, add an area label, and assign it. Split large work into sub-issues. Use blocked-by/blocking relationships when order matters.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary and why
+      description: What to do, who it helps, and why it matters.
+    validations:
+      required: true
+  - type: textarea
+    id: duplicate-check
+    attributes:
+      label: Duplicate check
+      description: What you searched and what you found. Link similar issues and describe differences.
+      placeholder: Searched open and recently closed issues for … No match. / Similar to #N; difference is …
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details and scope
+      description: Scope in/out, implementation notes, files, behavior, and accessibility considerations. This issue is the source of truth.
+    validations:
+      required: true
+  - type: textarea
+    id: testing
+    attributes:
+      label: Testing
+      description: Prefer checks an agent can run. Mark human-only checks as manual.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      value: |
+        - [ ] Work matches the Details and scope section
+        - [ ] Documentation and accessibility requirements are addressed when applicable
+        - [ ] Tests or manual checks in Testing pass
+    validations:
+      required: true

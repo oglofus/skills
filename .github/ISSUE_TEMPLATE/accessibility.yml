@@ -1,0 +1,60 @@
+name: Accessibility barrier
+description: Report an accessibility barrier or usability problem affecting disabled users
+title: "[Accessibility]: "
+labels:
+  - accessibility
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting this. Please describe the barrier respectfully and include only information you are comfortable sharing publicly. For a suspected security vulnerability, use the private reporting route in SECURITY.md instead.
+  - type: textarea
+    id: task
+    attributes:
+      label: Task affected
+      description: What were you trying to do, and what would success look like?
+    validations:
+      required: true
+  - type: textarea
+    id: expected-actual
+    attributes:
+      label: Expected and actual behavior
+      description: What did you expect to happen, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Give numbered steps. Include an optional link to a screen recording or text description when helpful; do not upload private data.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, browser/runtime, version, device, or commit.
+    validations:
+      required: true
+  - type: input
+    id: assistive-technology
+    attributes:
+      label: Assistive technology and settings
+      description: Screen reader, keyboard-only use, zoom, high contrast, reduced motion, or other relevant tools/settings. You may leave this blank.
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: Choose the impact on completing a core task.
+      options:
+        - Critical — prevents a core task
+        - High — significant difficulty; workaround exists
+        - Medium — annoyance or inconsistent experience
+        - Low — minor impact on usability
+    validations:
+      required: true
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround
+      description: Is there a way to complete the task today?

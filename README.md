@@ -20,6 +20,14 @@ Install it globally for all supported agents:
 npx skills add oglofus/skills@github-issues-task-manager -g -a '*' -y
 ```
 
+## Community health
+
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Contributing guide](CONTRIBUTING.md)
+- [Accessibility statement](ACCESSIBILITY.md)
+- [Security policy](SECURITY.md)
+- [Issue forms](https://github.com/oglofus/skills/issues/new/choose)
+
 List the skills in this repository without installing:
 
 ```bash
@@ -71,7 +79,7 @@ Each public skill lives under `skills/<name>/SKILL.md` with valid `name` and `de
 
 ## Contributing
 
-Open a detailed GitHub issue before changing a skill. Keep each skill self-contained, validate its `SKILL.md`, and include runnable verification steps. New skills should use lowercase hyphenated directory and frontmatter names.
+Open a detailed GitHub issue before changing a skill. Keep each skill self-contained, validate its `SKILL.md`, and include runnable verification steps. New skills should use lowercase hyphenated directory and frontmatter names. See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete workflow.
 
 ## License
 

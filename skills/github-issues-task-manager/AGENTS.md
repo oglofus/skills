@@ -17,7 +17,7 @@ GitHub Issues is the task manager for every agent in this repository. The issue 
 1. Search **open** and **recently closed** issues (`gh issue list`, `gh issue list --state closed --limit 20`, `gh search issues`).
 2. **Duplicate or near-duplicate:** do not open a new issue. Comment on the existing one that it was requested again, summarize the new request, and continue from that issue if work should proceed. Add `duplicate` only when closing a mistaken extra issue.
 3. **Similar with small differences:** comment on the existing issue with the requested deltas. Open a new issue only if the difference is a distinct deliverable; link both issues and set **blocked by** / **blocking** when one must wait on the other.
-4. Otherwise create a **root issue** (and **sub-issues** when the work splits). Then branch from `main`.
+4. Otherwise create a **root issue** (and **sub-issues** when the work splits). Then create the development branch through GitHub so the branch is natively linked to the issue.
 
 ## Issue quality
 
@@ -45,7 +45,7 @@ Assign the current GitHub user. Commands: `.cursor/skills/github-issues-task-man
 
 ## Branch, implement, update
 
-1. Branch from `main`: `issue-<root-number>-short-slug`.
+1. Create and check out the linked development branch from `main` with GitHub CLI: `gh issue develop <root-number> --name issue-<root-number>-short-slug --base main --checkout`. This GitHub operation is required; a branch name containing the issue number is not a substitute for the native issue-to-branch link. If the branch already exists, inspect `gh issue develop --list <root-number>` before reusing it and preserve or repair the native link through GitHub.
 2. Read the **full issue body, all comments, type, fields, sub-issues, and dependencies** before continuing.
 3. Implement only what the issue specifies. Do not include unrelated local files.
 4. When an issue or sub-issue is finished: **commit, push the branch, update the issue** (comment + checklist), then close it if acceptance criteria are met. Closing a blocker unblocks issues that were **blocked by** it.
@@ -76,7 +76,7 @@ Post concise PR and issue comments for material transitions: failure diagnosed, 
 
 ## After the root issue
 
-Open a PR into `main`. Fill `.github/pull_request_template.md`, link `Closes #<root>`, and assign. Add `agent` if an agent opened it, plus `area:*` when useful. Do not restack type/priority labels on the PR. Do not merge unless asked.
+Open a PR into `main`. Fill `.github/pull_request_template.md`, include the native closing reference `Closes #<root>` (or the appropriate GitHub closing keyword) in the PR body, and verify the created PR shows the issue in its linked issues / Development context. A plain URL, branch name, or unrelated mention is not enough. Assign the PR. Add `agent` if an agent opened it, plus `area:*` when useful. Do not restack type/priority labels on the PR. Do not merge unless asked.
 
 The PR Test plan must show what the agent ran. Any item the agent could not run must have step-by-step **Manual tests** instructions on that same PR.
 

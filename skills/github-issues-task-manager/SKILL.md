@@ -168,12 +168,18 @@ query {
 }"
 ```
 
-## 6. Branch
+## 6. Create a GitHub-linked branch
+
+Use GitHub's linked-development-branch operation, not only a local branch name containing the issue number:
 
 ```bash
-git fetch origin
-git switch -c "issue-${ROOT_NUM}-short-slug" origin/main
+gh issue develop "$ROOT_NUM" \
+  --name "issue-${ROOT_NUM}-short-slug" \
+  --base main \
+  --checkout
 ```
+
+This creates the branch from `main`, checks it out, and links it to the issue in GitHub. Confirm the link with `gh issue develop --list "$ROOT_NUM"`. If a branch already exists, inspect that list before reusing it; do not assume the issue number in the branch name created a native link.
 
 Do not include unrelated local files.
 
@@ -273,6 +279,8 @@ After each remediation push, repeat check discovery for the new SHA. Do not clai
 
 ## 11. Open the PR when the root issue implementation is done
 
+Include the GitHub issue-closing reference in the PR body so GitHub creates the native PR-to-issue link and closes the issue on merge. `Closes #${ROOT_NUM}` (or the appropriate GitHub closing keyword) must be an actual reference, not just a URL or branch name.
+
 ```bash
 gh pr create \
   --base main \
@@ -301,6 +309,13 @@ Closes #${ROOT_NUM}
 - [x] Issue/PR tests were run, or Manual tests has step-by-step instructions
 EOF
 )"
+```
+
+After creation, inspect the PR and verify GitHub lists the root issue under linked issues / Development:
+
+```bash
+PR_NUM=$(gh pr view --json number --jq .number)
+gh pr view "$PR_NUM" --json body,closingIssuesReferences,url
 ```
 
 Do not merge unless asked.
